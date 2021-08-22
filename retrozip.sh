@@ -1,15 +1,32 @@
 #!/bin/sh
 WORKDIR=/home/connor/.var/app/org.libretro.RetroArch/config/retroarch/downloads/*/
-for dir in $WORKDIR
-do
- echo "Processing $dir"
- for f in "$dir"*
-  do
-   if [ "${f##*.}" = "zip" ]
-    then
-     echo "Processing $f"
-     unzip "$f" -d "$dir"
-     rm "$f"
-   fi
+
+main () {
+  traverse_dir $WORKDIR
+  for dir in $WORKDIR
+    do
+    traverse_dir "$dir"
   done
-done
+}
+
+traverse_dir () {
+  echo "Processing $1"
+  for f in "$1"*
+    do
+    #echo "File $f"
+    # Unzip to destination directory (default: cwd)
+    if [ "${f##*.}" = "zip" ]
+      then
+      unzip "$f" -d "$1"
+      rm "$f"
+    fi
+
+    # Found directory - search it for zip files
+    if [ -d "$f" ]
+      then
+      traverse_dir "$f"/
+    fi
+  done
+}
+
+main
